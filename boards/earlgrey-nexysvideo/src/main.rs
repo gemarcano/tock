@@ -77,6 +77,7 @@ struct EarlGreyNexysVideo {
         capsules::virtual_uart::UartDevice<'static>,
     >,
     i2c_master: &'static capsules::i2c_master::I2CMasterDriver<lowrisc::i2c::I2c<'static>>,
+    perf: &'static capsules::perf::Perf,
 }
 
 /// Mapping of integer syscalls to objects that implement syscalls.
@@ -93,6 +94,7 @@ impl Platform for EarlGreyNexysVideo {
             capsules::alarm::DRIVER_NUM => f(Some(self.alarm)),
             capsules::low_level_debug::DRIVER_NUM => f(Some(self.lldb)),
             capsules::i2c_master::DRIVER_NUM => f(Some(self.i2c_master)),
+            capsules::perf::DRIVER_NUM => f(Some(self.perf)),
             _ => f(None),
         }
     }
@@ -261,6 +263,8 @@ pub unsafe fn reset_handler() {
 
     peripherals.i2c.set_master_client(i2c_master);
 
+    let perf = static_init!(capsules::perf::Perf, capsules::perf::Perf{});
+
     // USB support is currently broken in the OpenTitan hardware
     // See https://github.com/lowRISC/opentitan/issues/2598 for more details
     // let usb = usb::UsbComponent::new(board_kernel).finalize(());
@@ -320,6 +324,7 @@ pub unsafe fn reset_handler() {
         hmac,
         lldb: lldb,
         i2c_master,
+        perf,
     };
 
     kernel::procs::load_processes(
