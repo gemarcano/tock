@@ -244,7 +244,7 @@ impl<'a, A: Alarm<'a>> Driver for AlarmDriver<'a, A> {
                         let reference = data;
                         let dt = data2;
                         rearm(reference, dt)
-                    },
+                    }
                     _ => (ReturnCode::ENOSUPPORT, false)
                 }
             })
