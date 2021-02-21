@@ -21,7 +21,11 @@ impl Driver for Perf {
     ///
     /// - `0`: Driver check.
     /// - `1`: Get perf counter.
+<<<<<<< HEAD
     fn command(&self, command_num: usize, data: usize, _: usize, _: AppId) -> ReturnCode {
+=======
+    fn command(&self, command_num: usize, _: usize, _: usize, _: AppId) -> ReturnCode {
+>>>>>>> cd1bb8bc39036b5ed6c7ad0ab71dd5f5e2a1cf98
         match command_num {
             0 /* check if present */ => ReturnCode::SuccessWithValue { value: 1 },
 
