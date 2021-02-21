@@ -9,8 +9,6 @@ use kernel::{AppId, Callback, Driver, Grant, ReturnCode};
 use crate::driver;
 pub const DRIVER_NUM: usize = driver::NUM::Alarm as usize;
 
-pub use riscv::csr;
-
 #[derive(Copy, Clone, Debug)]
 enum Expiration {
     Disabled,
@@ -246,10 +244,6 @@ impl<'a, A: Alarm<'a>> Driver for AlarmDriver<'a, A> {
                         let reference = data;
                         let dt = data2;
                         rearm(reference, dt)
-                    },
-                    7 /* MONKEYPATCH */ => {
-                        (ReturnCode::SuccessWithValue { value: csr::CSR.mcycle.get() as usize },
-                         false)
                     },
                     _ => (ReturnCode::ENOSUPPORT, false)
                 }
