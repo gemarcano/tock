@@ -78,6 +78,7 @@ struct EarlGreyNexysVideo {
     >,
     i2c_master: &'static capsules::i2c_master::I2CMasterDriver<lowrisc::i2c::I2c<'static>>,
     perf: &'static capsules::perf::Perf,
+    ipc: kernel::ipc::IPC<NUM_PROCS>,
 }
 
 /// Mapping of integer syscalls to objects that implement syscalls.
@@ -95,6 +96,7 @@ impl Platform for EarlGreyNexysVideo {
             capsules::low_level_debug::DRIVER_NUM => f(Some(self.lldb)),
             capsules::i2c_master::DRIVER_NUM => f(Some(self.i2c_master)),
             capsules::perf::DRIVER_NUM => f(Some(self.perf)),
+            kernel::ipc::DRIVER_NUM => f(Some(&self.ipc)),
             _ => f(None),
         }
     }
@@ -325,6 +327,7 @@ pub unsafe fn reset_handler() {
         lldb: lldb,
         i2c_master,
         perf,
+        ipc: kernel::ipc::IPC::new(board_kernel, &memory_allocation_cap),
     };
 
     kernel::procs::load_processes(
@@ -352,7 +355,7 @@ pub unsafe fn reset_handler() {
     board_kernel.kernel_loop(
         &earlgrey_nexysvideo,
         chip,
-        None::<&kernel::ipc::IPC<NUM_PROCS>>,
+        Some(&earlgrey_nexysvideo.ipc),
         scheduler,
         &main_loop_cap,
     );
