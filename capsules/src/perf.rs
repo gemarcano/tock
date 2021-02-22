@@ -21,12 +21,16 @@ impl Driver for Perf {
     ///
     /// - `0`: Driver check.
     /// - `1`: Get perf counter.
+    /// - `2`: Get number of instructions executed
     fn command(&self, command_num: usize, _: usize, _: usize, _: AppId) -> ReturnCode {
         match command_num {
             0 /* check if present */ => ReturnCode::SuccessWithValue { value: 1 },
 
             1 /* FIXME HACK This needs to be implemented in the HIL somehow */ =>
                 ReturnCode::SuccessWithValue { value: csr::CSR.mcycle.get() as usize },
+            
+            2 /* FIXME HACK This needs to be implemented in the HIL somehow */ =>
+                ReturnCode::SuccessWithValue { value: csr::CSR.minstret.get() as usize },
 
             _ => ReturnCode::ENOSUPPORT,
         }
