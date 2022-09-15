@@ -25,6 +25,15 @@ impl<'a> kernel::platform::chip::InterruptService<DeferredCallTask>
                 let pin = &self.e310x.gpio_port[(int_pin - interrupts::GPIO0) as usize];
                 pin.handle_interrupt();
             }
+            interrupts::QSPI0 => {
+                self.e310x.qspi0.handle_interrupt();
+            }
+            interrupts::SPI1 => {
+                self.e310x.spi1.handle_interrupt();
+            }
+            interrupts::SPI2 => {
+                self.e310x.spi2.handle_interrupt();
+            }
 
             // put E310x specific interrupts here
             _ => return self.e310x.service_interrupt(interrupt),

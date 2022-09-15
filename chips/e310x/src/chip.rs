@@ -35,6 +35,9 @@ pub struct E310xDefaultPeripherals<'a> {
     pub pwm2: sifive::pwm::Pwm,
     pub rtc: sifive::rtc::Rtc,
     pub watchdog: sifive::watchdog::Watchdog,
+    pub qspi0: sifive::spi::Spi,
+    pub spi1: sifive::spi::Spi,
+    pub spi2: sifive::spi::Spi,
 }
 
 impl<'a> E310xDefaultPeripherals<'a> {
@@ -49,6 +52,9 @@ impl<'a> E310xDefaultPeripherals<'a> {
             pwm2: sifive::pwm::Pwm::new(crate::pwm::PWM2_BASE),
             rtc: sifive::rtc::Rtc::new(crate::rtc::RTC_BASE),
             watchdog: sifive::watchdog::Watchdog::new(crate::watchdog::WATCHDOG_BASE),
+            qspi0: sifive::spi::Spi::new(crate::spi::QSPI0_BASE),
+            spi1: sifive::spi::Spi::new(crate::spi::SPI1_BASE),
+            spi2: sifive::spi::Spi::new(crate::spi::SPI2_BASE),
         }
     }
 }

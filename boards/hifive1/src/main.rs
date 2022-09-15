@@ -10,6 +10,7 @@
 #![cfg_attr(not(doc), no_main)]
 
 use capsules::virtual_alarm::{MuxAlarm, VirtualMuxAlarm};
+use capsules::virtual_spi::VirtualSpiMasterDevice;
 use e310_g002::interrupt_service::E310G002DefaultPeripherals;
 use kernel::capabilities;
 use kernel::component::Component;
@@ -67,6 +68,10 @@ struct HiFive1 {
     scheduler: &'static CooperativeSched<'static>,
     scheduler_timer:
         &'static VirtualSchedulerTimer<VirtualMuxAlarm<'static, sifive::clint::Clint<'static>>>,
+    spi: &'static capsules::spi_controller::Spi<
+        'static,
+        VirtualSpiMasterDevice<'static, sifive::spi::Spi>,
+    >,
 }
 
 /// Mapping of integer syscalls to objects that implement syscalls.
@@ -80,6 +85,7 @@ impl SyscallDriverLookup for HiFive1 {
             capsules::console::DRIVER_NUM => f(Some(self.console)),
             capsules::alarm::DRIVER_NUM => f(Some(self.alarm)),
             capsules::low_level_debug::DRIVER_NUM => f(Some(self.lldb)),
+            capsules::spi_controller::DRIVER_NUM => f(Some(self.spi)),
             _ => f(None),
         }
     }
@@ -283,6 +289,26 @@ pub unsafe fn main() {
     );
     hil::time::Alarm::set_alarm_client(virtual_alarm_user, alarm);
 
+    // SPI1, since QSPI0 is used for flash program
+    let mux_spi =
+        components::spi::SpiMuxComponent::new(&peripherals.e310x.spi1, dynamic_deferred_caller)
+            .finalize(components::spi_mux_component_static!(sifive::spi::Spi));
+    let spi = components::spi::SpiSyscallComponent::new(
+        board_kernel,
+        mux_spi,
+        0, // chip select
+        capsules::spi_controller::DRIVER_NUM,
+    )
+    .finalize(components::spi_syscall_component_static!(sifive::spi::Spi));
+
+    // Configure SPI1 pins
+    peripherals.e310x.spi1.initialize_gpio_pins(
+        &peripherals.e310x.gpio_port[2],
+        &peripherals.e310x.gpio_port[3],
+        &peripherals.e310x.gpio_port[4],
+        &peripherals.e310x.gpio_port[5],
+    );
+
     let chip = static_init!(
         e310_g002::chip::E310x<E310G002DefaultPeripherals>,
         e310_g002::chip::E310x::new(peripherals, hardware_timer)
@@ -352,6 +378,7 @@ pub unsafe fn main() {
         led,
         scheduler,
         scheduler_timer,
+        spi: spi,
     };
 
     load_processes_not_inlined(board_kernel, chip);
